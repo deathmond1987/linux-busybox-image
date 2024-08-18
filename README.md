@@ -12,7 +12,7 @@ docker build . --tag linux:simple --progress=plain
 docker run --name linuxs --privileged linux:simple
 docker cp linuxs:/boot.hdd ./
 docker rm linuxs
-qemu-system-x86_64 -drive format=raw,file=./boot.hdd
+qemu-system-x86_64 -drive format=raw,file=./boot.hdd &
 vncviewer 127.0.0.1:5900
 ```
 and now you in generated system
