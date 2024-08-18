@@ -1,5 +1,5 @@
 #!/usr/bin/env ash
-set -ex
+set -e
 
 # move to project dir
 cd /new_os/
