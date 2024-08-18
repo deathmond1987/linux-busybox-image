@@ -66,8 +66,8 @@ RUN mkdir -p obj/busybox-x86
 # create default config
 RUN make O=obj/busybox-x86 defconfig
 # set build static
-#RUN sed -i '/# CONFIG_STATIC is not set/c\CONFIG_STATIC=y' obj/busybox-x86/.config
-RUN echo "CONFIG_STATIC=y" >> obj/busybox-x86/.config
+RUN sed -i '/# CONFIG_STATIC is not set/c\CONFIG_STATIC=y' obj/busybox-x86/.config
+#RUN echo "CONFIG_STATIC=y" >> obj/busybox-x86/.config
 WORKDIR obj/busybox-x86
 # build busybox
 RUN make -j$(nproc)
