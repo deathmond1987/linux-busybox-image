@@ -83,13 +83,6 @@ RUN rm /new_os/initramfs/linuxrc
 # create init script
 COPY <<EOF /new_os/initramfs/init
 #!/bin/sh
-# we need base filesystem
-
-#mkdir -p /dev /sys /proc /etc
-#touch /etc/fstab
-#mount -t proc none /proc
-#mount -t sysfs none /sys
-#mount -t devtmpfs none /dev
 /bin/sh
 EOF
 
