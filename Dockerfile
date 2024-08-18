@@ -66,8 +66,8 @@ RUN mkdir -p obj/busybox-x86
 # create default config
 RUN make O=obj/busybox-x86 defconfig
 # set build static
-RUN sed -i '/# CONFIG_STATIC is not set/c\CONFIG_STATIC=y' obj/busybox-x86/.config
-#RUN echo "CONFIG_STATIC=y" >> obj/busybox-x86/.config
+#RUN sed -i '/# CONFIG_STATIC is not set/c\CONFIG_STATIC=y' obj/busybox-x86/.config
+RUN echo "CONFIG_STATIC=y" >> obj/busybox-x86/.config
 WORKDIR obj/busybox-x86
 # build busybox
 RUN make -j$(nproc)
@@ -107,7 +107,7 @@ WORKDIR /new_os/initramfs/
 RUN find . | cpio -o -H newc > ../${INITFS_FILE}
 
 # create raw image disk
-RUN dd if=/dev/zero of=/boot.hdd bs=1M count=50
+RUN dd if=/dev/zero of=/boot.hdd bs=1M count=20
 # add fat fs  needed packages
 RUN apk add dosfstools util-linux
 RUN mkfs -t fat /boot.hdd
