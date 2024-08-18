@@ -12,4 +12,4 @@ to run image you need:
     qemu-system-x86_64 -drive format=raw,file=./boot.hdd  
     vncviewer 127.0.0.1:5900  
 ```
-and now you ingenerated system
+and now you in generated system
