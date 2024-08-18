@@ -1,7 +1,7 @@
 # linux-busybox-image
 gen base linux image with kernel, busybox and syslinux from source  
 
-USING:
+USING:  
 You need install docker, qemu and any vnc client. In my case vnc client is vncviewer
   
 to run image you need:  
