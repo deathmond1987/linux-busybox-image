@@ -1,10 +1,13 @@
+# build static file manager 
 FROM alpine:latest as lf
 RUN apk add --no-cache go
 RUN env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
-RUN ls -la
 
 FROM alpine:edge
-ENV INITFS_FILE=initfs.cpio KERNEL=bzImage LOCALVERSION=-vasyan_edition
+# need rework
+# LOCALVERSION - change second kernel name
+# ARCH - kernel target architecture
+ENV INITFS_FILE=initfs.cpio KERNEL=bzImage LOCALVERSION=-noname_edition ARCH=x86_64
 # установка зависимостей необходимых для сборки ядра
 # git           - система контроля версий. им мы будем забирать исходный код
 # vim           - для редактирования конфигов
@@ -39,20 +42,16 @@ RUN apk add --update --no-cache \
 
 # clone kernel sources
 RUN git clone --depth 1 https://github.com/torvalds/linux.git
-# busydox awk not compactible
-RUN apk add gawk
-# busybox diff not compactible
-RUN apk add diffutils
-# busybox find not compactible
-RUN apk add findutils
+# this packages in alpine busybox not compactible with kernel building
+RUN apk add gawk diffutils findutils
 # cd to linux source
 WORKDIR linux
-# we need to build x86_64 kernel
-ENV ARCH=x86_64
 # create default kernel config
 RUN make defconfig
 # build kernel with default config
 RUN make -j$(nproc)
+# build modules
+# i use one module to explain why modules need to be in initfs
 RUN make -j$(nproc) -C . M=$PWD modules
 RUN ls -la arch/x86/boot/
 
@@ -104,8 +103,8 @@ mkdir -p /dev /sys /proc /mnt
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs none /dev
+# mount hdd itlself to /mnt
 mount /dev/sda /mnt
-
 # show disk usage and kernel name
 echo "disk usage:"
 du -hs * | sort -h
