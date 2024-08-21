@@ -1,3 +1,8 @@
+FROM alpine:latest as lf
+RUN apk add --no-cache go
+RUN env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+RUN ls -la
+
 FROM alpine:edge
 ENV INITFS_FILE=initfs.cpio KERNEL=bzImage LOCALVERSION=-vasyan_edition
 # установка зависимостей необходимых для сборки ядра
@@ -15,7 +20,7 @@ ENV INITFS_FILE=initfs.cpio KERNEL=bzImage LOCALVERSION=-vasyan_edition
 # elfutils-dev  - заголовочные файлы для работы с эльфами и дворфами (серьезно. ELF и DWARF)
 # perl          - ну perl
 # openssl-dev   - заголовочные файлы openssl
- 
+
 RUN apk add --update --no-cache \
                                git \
                                bzip2 \
@@ -80,6 +85,9 @@ RUN ls -la /new_os/initramfs
 # remove linuxrc
 RUN rm /new_os/initramfs/linuxrc
 
+# add dependency-free file manager
+COPY --from=lf /root/go/bin/lf /new_os/initramfs/bin/
+
 # create init script
 COPY <<EOF /new_os/initramfs/init
 #!/bin/sh
@@ -97,8 +105,11 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs none /dev
 mount /dev/sda /mnt
-echo "disk usage:"
-du -hs * | sort -h
+# user need to run lf
+export USER=root
+# escape from /dev/terminal to /dev/tty1
+# this also need to run lf
+exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
 EOF
 RUN chmod +x /new_os/initramfs/work.sh
 
