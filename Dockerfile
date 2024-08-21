@@ -97,6 +97,8 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs none /dev
 mount /dev/sda /mnt
+echo "disk usage:"
+du -hs * | sort -h
 EOF
 RUN chmod +x /new_os/initramfs/work.sh
 
