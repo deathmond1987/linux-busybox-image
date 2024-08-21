@@ -105,6 +105,11 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs none /dev
 mount /dev/sda /mnt
+
+# show disk usage and kernel name
+echo "disk usage:"
+du -hs * | sort -h
+uname -a
 # user need to run lf
 export USER=root
 # escape from /dev/terminal to /dev/tty1
