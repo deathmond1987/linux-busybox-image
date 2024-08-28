@@ -1,5 +1,6 @@
 # linux-busybox-image
 gen base linux image with kernel, busybox and syslinux from source  
+can gen OS in debian, arch, fedora and alpine linux
 
 USING:  
 You need install docker, qemu and any vnc client. In my case vnc client is vncviewer
