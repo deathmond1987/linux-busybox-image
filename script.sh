@@ -1,44 +1,41 @@
 #!/usr/bin/env ash
 set -e
-set -x
-## move to project dir
+
+# move to project dir
 cd /new_os/
 
-## mount disk image
+# mount disk image
+echo "mount /boot.hdd..."
 mount /boot.hdd /mount
 
-## copy to mount image all files
-
-## create syslinux config dir
+# copy to mount image all files
 mkdir -p /mount/boot/syslinux
-## copy bzImage to /boot
+echo "copy linux kernel..."
 cp ${KERNEL} /mount/boot
-## copy initramfs to /boot
+echo "copy init..."
 cp ${INITFS_FILE} /mount/boot
-## create kernel modules dir
 mkdir -p /mount/usr/lib/modules/version_name/kernel/drivers/md/
-## copy example kernel module to that dir
 cp LVM2.ko /mount/usr/lib/modules/version_name/kernel/drivers/md/
+echo "creating syslinux conf..."
 
-## gen syslinux conf
+# gen syslinux conf
 echo "SERIAL 0
 PROMPT 1
 TIMEOUT 50
 DEFAULT invalid
 
-LABEL invalid-linux
-MENU LABEL invalid-linux
+LABEL invalid
+MENU LABEL invalid
 LINUX /boot/${KERNEL}
 INITRD /boot/initfs.cpio" > /mount/boot/syslinux/syslinux.cfg
 
-## show created filesystem tree
 tree /mount
 
-## unmount disk image
+#unmount disk image
+echo "unmount /boot.hdd"
 umount /mount
 
-## show next steps help
-echo "
+echo "raw image created!
 
 NEXT :
   copy /boot.hdd            : docker cp linuxs:/boot.hdd ./
