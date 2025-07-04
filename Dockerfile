@@ -125,7 +125,7 @@ WORKDIR /new_os/initramfs/
 RUN find . | cpio -o -H newc > ../${INITFS_FILE}
 
 ## create raw image disk
-RUN dd if=/dev/zero of=/boot.hdd bs=1M count=20
+RUN dd if=/dev/zero of=/boot.hdd bs=1M count=30
 ## add fat fs  needed packages
 RUN apk add dosfstools util-linux
 RUN mkfs -t fat /boot.hdd
