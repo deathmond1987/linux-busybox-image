@@ -287,10 +287,11 @@ du -hs * | sort -h
 uname -a
 ## user need to run lf
 export USER=root
-## escape from /dev/terminal to /dev/tty1
+## mc requires variables
 export TERMINFO=/etc/terminfo
 export TERM=xterm-256color
 export MC_SKIN=/gotar.ini
+## escape from /dev/terminal to /dev/tty1
 exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
 EOF
 
