@@ -1,7 +1,4 @@
-## build static file manager 
-#FROM alpine:latest as lf
-#RUN apk add --no-cache go
-#RUN env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+## build static mc file manager 
 FROM alpine:3.19 AS mc-build
 
 RUN apk add --no-cache \
@@ -27,7 +24,6 @@ RUN ./configure \
 RUN make -j$(nproc) || true
 RUN make install || true
 
-# Ручная статическая линковка
 RUN gcc -static -no-pie -o /usr/bin/mc_pure_static \
     $(find src lib -name "*.o" ! -path "*/.libs/*" ! -name "mc.o" ! -name "cons.saver.o" ! -name "man2hlp.o" ! -name "main.o") \
     src/main.o \
@@ -36,6 +32,7 @@ RUN gcc -static -no-pie -o /usr/bin/mc_pure_static \
     -Wl,--end-group && \
     strip /usr/bin/mc_pure_static
 
+## mc skin
 RUN <<EOF cat > /gotar.ini
 [skin]
     description = GoTaR @PLD Linux
