@@ -260,6 +260,8 @@ RUN rm /new_os/initramfs/linuxrc
 #COPY --from=lf /root/go/bin/lf /new_os/initramfs/bin/
 COPY --from=mc-build /usr/bin/mc_pure_static /new_os/initramfs/bin/mc
 COPY --from=mc-build /gotar.ini /new_os/initramfs/gotar.ini
+RUN mkdir -p /new_os/initramfs/etc/terminfo/x
+COPY --from=mc-build  /etc/terminfo/x/xterm-256color /new_os/initramfs/etc/terminfo/x/xterm-256color
 
 ## create init script
 COPY <<EOF /new_os/initramfs/init
@@ -286,7 +288,8 @@ uname -a
 ## user need to run lf
 export USER=root
 ## escape from /dev/terminal to /dev/tty1
-## this also need to run lf
+export TERMINFO=/etc/terminfo
+export TERM=xterm-256color
 export MC_SKIN=/gotar.ini
 exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
 EOF
