@@ -1,7 +1,176 @@
 ## build static file manager 
-FROM alpine:latest as lf
-RUN apk add --no-cache go
-RUN env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+#FROM alpine:latest as lf
+#RUN apk add --no-cache go
+#RUN env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+FROM alpine:3.19 AS mc-build
+
+RUN apk add --no-cache \
+    build-base glib-dev glib-static ncurses-dev ncurses-static \
+    ncurses-terminfo-base pcre2-dev gettext-dev gettext-static \
+    zlib-dev zlib-static libssh2-dev libssh2-static openssl-dev \
+    openssl-libs-static tar xz findutils bash
+
+WORKDIR /build
+ADD http://ftp.midnight-commander.org/mc-4.8.31.tar.xz /build/mc.tar.xz
+RUN tar -xf mc.tar.xz --strip-components=1
+
+RUN ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --without-x \
+    --with-screen=ncurses \
+    --enable-vfs-sftp \
+    --disable-nls \
+    --without-man \
+    --disable-doxygen
+
+RUN make -j$(nproc) || true
+RUN make install || true
+
+# Ручная статическая линковка
+RUN gcc -static -no-pie -o /usr/bin/mc_pure_static \
+    $(find src lib -name "*.o" ! -path "*/.libs/*" ! -name "mc.o" ! -name "cons.saver.o" ! -name "man2hlp.o" ! -name "main.o") \
+    src/main.o \
+    -Wl,--start-group \
+    -lglib-2.0 -lpcre2-8 -lncursesw -lintl -lz -lssh2 -lssl -lcrypto \
+    -Wl,--end-group && \
+    strip /usr/bin/mc_pure_static
+
+RUN echo "[skin]
+    description = GoTaR @PLD Linux
+
+[Lines]
+    horiz = ─
+    vert = │
+    lefttop = ┌
+    righttop = ┐
+    leftbottom = └
+    rightbottom = ┘
+    topmiddle = ┬
+    bottommiddle = ┴
+    leftmiddle = ├
+    rightmiddle = ┤
+    cross = ┼
+    dhoriz = ─
+    dvert = │
+    dlefttop = ┌
+    drighttop = ┐
+    dleftbottom = └
+    drightbottom = ┘
+    dtopmiddle = ┬
+    dbottommiddle = ┴
+    dleftmiddle = ├
+    drightmiddle = ┤
+
+[core]
+    _default_ = lightgray;black
+    selected = white;blue
+    marked = brightred;
+    markselect = yellow;
+    gauge = ;brown
+    input = brightgreen;
+    disabled = gray;blue
+    reverse = brightgreen;blue
+    header = brightred;
+    inputhistory =
+    commandhistory =
+    shadow = gray;black
+
+[dialog]
+    _default_ = brightcyan;blue
+    dfocus = brightred;black
+    dhotnormal = brightred;
+    dhotfocus = yellow;black
+    dtitle = brightred;
+
+[error]
+    _default_ = white;red
+    errdfocus = brightgreen;blue
+    errdhotnormal = yellow;
+    errdhotfocus = yellow;blue
+    errdtitle = yellow;
+
+[filehighlight]
+    directory = brightcyan;
+    executable = brightgreen;
+    symlink = red;
+    hardlink =
+    stalelink = yellow;blue
+    device = green;
+    special = brightblue;
+    core = red;
+    temp = gray;
+    archive = cyan;
+    doc = brown;
+    source = green;
+    media = white;
+    graph = magenta;
+    database = ;
+
+[menu]
+    _default_ = brightgreen;black
+    menusel = brightcyan;blue
+    menuhot = brightred;
+    menuhotsel = yellow;
+    menuinactive = lightgray;
+
+[popupmenu]
+    _default_ = brightgreen;black
+    menusel = brightcyan;blue
+    menutitle = brightcyan;black
+
+[buttonbar]
+    hotkey = lightgray;black
+    button = white;blue
+
+[statusbar]
+    _default_ = white;blue
+
+[help]
+    _default_ = brightred;black
+    helpitalic = brightcyan;
+    helpbold = brightgreen;
+    helplink = white;
+    helpslink = yellow;blue
+    helptitle = brightgreen;
+
+[editor]
+    _default_ = lightgray;black
+    editbold = yellow;blue
+    editmarked = brightgreen;red
+    editwhitespace = brightblue;blue
+    editnonprintable = ;black
+    editlinestate = brightgreen
+    bookmark = white;red
+    bookmarkfound = black;green
+    editrightmargin = brightblue;blue
+#    editbg =
+#    editframe =
+    editframeactive = white;
+    editframedrag = green;
+
+[viewer]
+    _default_ = lightgray;black
+    viewbold = brightred;black
+    viewunderline = brightgreen;black
+    viewselected = yellow;black
+
+[diffviewer]
+    _default_ = lightgray;black
+    added = brightgreen;
+    changedline = cyan;
+    changednew = yellow;
+    changed = ;brown
+    removed = ;blue
+    error = white;red
+
+[widget-panel]
+    filename-scroll-left-char = {
+    filename-scroll-right-char = }
+
+[widget-editor]
+    window-state-char = *
+    window-close-char = X" >> /gotar.ini
 
 FROM alpine:edge
 ## need rework
@@ -86,7 +255,9 @@ RUN ls -la /new_os/initramfs
 RUN rm /new_os/initramfs/linuxrc
 
 ## add dependency-free file manager
-COPY --from=lf /root/go/bin/lf /new_os/initramfs/bin/
+#COPY --from=lf /root/go/bin/lf /new_os/initramfs/bin/
+COPY --from=mc-build /usr/bin/mc_pure_static /bin/mc
+COPY --from=mc-build /gotar.ini /gotar.ini
 
 ## create init script
 COPY <<EOF /new_os/initramfs/init
@@ -114,8 +285,10 @@ uname -a
 export USER=root
 ## escape from /dev/terminal to /dev/tty1
 ## this also need to run lf
+export MC_SKIN=/gotar.ini
 exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
 EOF
+
 RUN chmod +x /new_os/initramfs/work.sh
 
 RUN ls -la /new_os/initramfs
