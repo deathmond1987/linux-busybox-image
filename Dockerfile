@@ -258,8 +258,8 @@ RUN rm /new_os/initramfs/linuxrc
 
 ## add dependency-free file manager
 #COPY --from=lf /root/go/bin/lf /new_os/initramfs/bin/
-COPY --from=mc-build /usr/bin/mc_pure_static /bin/mc
-COPY --from=mc-build /gotar.ini /gotar.ini
+COPY --from=mc-build /usr/bin/mc_pure_static /new_os/initramfs/bin/mc
+COPY --from=mc-build /gotar.ini /new_os/initramfs/gotar.ini
 
 ## create init script
 COPY <<EOF /new_os/initramfs/init
