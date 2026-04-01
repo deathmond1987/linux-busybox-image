@@ -288,6 +288,7 @@ export USER=root
 export TERMINFO=/etc/terminfo
 export TERM=xterm-256color
 export MC_SKIN=/gotar.ini
+mkdir -p /tmp
 ## escape from /dev/terminal to /dev/tty1
 exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
 EOF
