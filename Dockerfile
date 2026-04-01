@@ -36,7 +36,8 @@ RUN gcc -static -no-pie -o /usr/bin/mc_pure_static \
     -Wl,--end-group && \
     strip /usr/bin/mc_pure_static
 
-RUN echo "[skin]
+RUN <<EOF cat > /gotar.ini
+[skin]
     description = GoTaR @PLD Linux
 
 [Lines]
@@ -170,7 +171,8 @@ RUN echo "[skin]
 
 [widget-editor]
     window-state-char = *
-    window-close-char = X" >> /gotar.ini
+    window-close-char = X"
+EOF
 
 FROM alpine:edge
 ## need rework
