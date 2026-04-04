@@ -168,7 +168,7 @@ RUN <<EOF cat > /gotar.ini
 
 [widget-editor]
     window-state-char = *
-    window-close-char = X"
+    window-close-char = X
 EOF
 
 FROM alpine:edge
