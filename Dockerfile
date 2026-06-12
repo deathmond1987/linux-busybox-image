@@ -278,6 +278,12 @@ mount -t sysfs none /sys
 mount -t devtmpfs none /dev
 ## mount hdd itlself to /mnt
 mount /dev/sda /mnt
+## set network (only qemu)
+ip link set dev up
+ip link set eth0 up
+ip addr add 10.0.2.15/24 dev eth0
+ip route add default via 10.0.2.2 dev eth0
+echo "nameserver 10.0.2.3" > /etc/resolv.conf
 ## show disk usage and kernel name
 echo "disk usage:"
 du -hs * | sort -h
